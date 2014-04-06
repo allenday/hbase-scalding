@@ -51,22 +51,13 @@ mainClass := Some("com.twitter.scalding.Tool")
 
   seq(assemblySettings: _*)
 
+val p1 = "(?i)META-INF.*".r
+val p2 = "(?i)log4j.properties.*".r
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
+    case p1(_) => MergeStrategy.discard
+    case p2(_) => MergeStrategy.discard
     case _ => MergeStrategy.last // leiningen build files
-  }
-}
-
-excludedFiles in assembly := { (bases: Seq[File]) =>
-  bases.filterNot(_.getAbsolutePath.contains("seshet")) flatMap { base => 
-    //Exclude all log4j.properties from other peoples jars
-    ((base * "*").get collect {
-      case f if f.getName.toLowerCase == "log4j.properties" => f
-    }) ++ 
-    //Exclude the license and manifest from the exploded jars
-    ((base / "META-INF" * "*").get collect {
-      case f => f
-    })
   }
 }
